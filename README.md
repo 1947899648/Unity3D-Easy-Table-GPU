@@ -2,6 +2,28 @@
 
 [![Unity Version](https://img.shields.io/badge/Unity-2021.3.21f1-blue)](https://unity.com/)
 
+## Demo / 演示
+
+| 3D Table Demo | UI Canvas Demo |
+|:---:|:---:|
+| ![EasyTableGPUDemo3D](EasyTableGPUDemo3D.gif) | ![EasyTableGPUDemoUI](EasyTableGPUDemoUI.gif) |
+| `Assets/Scenes/EasyTableGPUDemo3D.unity` | `Assets/Scenes/EasyTableGPUDemoUI.unity` |
+
+**Demo 操作 | Controls：**
+
+| 操作 | 按键 / 方式 |
+|------|-------------|
+| 生成数据 (100行×10列) | `S` |
+| 清空表格 | `A` |
+| 添加一行 | `Z` |
+| 删除最后一行 | `X` |
+| 切换 Toggle | `T` |
+| 垂直滚动 | 鼠标滚轮 |
+| 水平滚动 | `Shift + 鼠标滚轮` |
+| 点击交互 | 鼠标左键 |
+
+---
+
 > **基于 GPU 渲染的高性能表格插件 | GPU-Accelerated High-Performance Table Plugin for Unity**
 
 ---
@@ -41,28 +63,6 @@ TableGpuController (核心控制器 / Core Controller)
 
 ---
 
-## Demo / 演示
-
-| 3D Table Demo | UI Canvas Demo |
-|:---:|:---:|
-| ![EasyTableGPUDemo3D](EasyTableGPUDemo3D.gif) | ![EasyTableGPUDemoUI](EasyTableGPUDemoUI.gif) |
-| `Assets/Scenes/EasyTableGPUDemo3D.unity` | `Assets/Scenes/EasyTableGPUDemoUI.unity` |
-
-**Demo 操作 | Controls：**
-
-| 操作 | 按键 / 方式 |
-|------|-------------|
-| 生成数据 (100行×10列) | `S` |
-| 清空表格 | `A` |
-| 添加一行 | `Z` |
-| 删除最后一行 | `X` |
-| 切换 Toggle | `T` |
-| 垂直滚动 | 鼠标滚轮 |
-| 水平滚动 | `Shift + 鼠标滚轮` |
-| 点击交互 | 鼠标左键 |
-
----
-
 ## 快速开始 | Quick Start
 
 ### 3D 场景
@@ -92,16 +92,6 @@ TableGpuController (核心控制器 / Core Controller)
 问题修复优先级将随版本迭代逐步处理。欢迎提交 Issue。
 
 These issues will be addressed in future iterations. Issues and PRs are welcome.
-
----
-
-## 仓库 | Repository
-
-**GitHub:** [https://github.com/1947899648/Unity3D-Easy-Table-GPU](https://github.com/1947899648/Unity3D-Easy-Table-GPU)
-
-```bash
-git clone https://github.com/1947899648/Unity3D-Easy-Table-GPU.git
-```
 
 ---
 

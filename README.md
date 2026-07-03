@@ -1,5 +1,7 @@
 # EasyTableGPU / 易用GPU表格
 
+> **基于 GPU 渲染的高性能表格插件 | GPU-Accelerated High-Performance Table Plugin for Unity**
+
 [![Unity Version](https://img.shields.io/badge/Unity-2021.3.21f1-blue)](https://unity.com/)
 
 ## Demo / 演示
@@ -8,23 +10,6 @@
 |:---:|:---:|
 | ![EasyTableGPUDemo3D](EasyTableGPUDemo3D.gif) | ![EasyTableGPUDemoUI](EasyTableGPUDemoUI.gif) |
 | `Assets/Scenes/EasyTableGPUDemo3D.unity` | `Assets/Scenes/EasyTableGPUDemoUI.unity` |
-
-**Demo 操作 | Controls：**
-
-| 操作 | 按键 / 方式 |
-|------|-------------|
-| 生成数据 (100行×10列) | `S` |
-| 清空表格 | `A` |
-| 添加一行 | `Z` |
-| 删除最后一行 | `X` |
-| 切换 Toggle | `T` |
-| 垂直滚动 | 鼠标滚轮 |
-| 水平滚动 | `Shift + 鼠标滚轮` |
-| 点击交互 | 鼠标左键 |
-
----
-
-> **基于 GPU 渲染的高性能表格插件 | GPU-Accelerated High-Performance Table Plugin for Unity**
 
 ---
 
@@ -76,6 +61,19 @@ TableGpuController (核心控制器 / Core Controller)
 1. 打开 `EasyTableGPUDemoUI.unity`
 2. 运行场景，按 `S` 生成测试数据
 3. 参考 `TableGpuDemoUI.cs` 了解 API 用法
+
+**Demo 操作 | Controls：**
+
+| 操作 | 按键 / 方式 |
+|------|-------------|
+| 生成数据 (100行×10列) | `S` |
+| 清空表格 | `A` |
+| 添加一行 | `Z` |
+| 删除最后一行 | `X` |
+| 切换 Toggle | `T` |
+| 垂直滚动 | 鼠标滚轮 |
+| 水平滚动 | `Shift + 鼠标滚轮` |
+| 点击交互 | 鼠标左键 |
 
 ---
 

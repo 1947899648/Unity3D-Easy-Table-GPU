@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b7d82815cb795544888549e3e66ff2c, type: 3}
+  m_Name: TableGpuStyle
+  m_EditorClassIdentifier: 
+  IsShowToggleColumn: 1
+  IsShowButtonColumn: 1
+  ToggleColumnWidth: 50
+  ButtonColumnWidth: 50
+  HeaderRowHeight: 50
+  ContentRowHeight: 30
+  TableTotalWidth: 1200
+  ColumnWidths:
+  - 30
+  - 100
+  - 200
+  TextFontSize: 14
+  CellPaddingLeft: 6
+  CellPaddingRight: 6
+  CharTracking: 0
+  CellTextColor: {r: 0, g: 0, b: 0, a: 1}
+  HeaderTextColor: {r: 0, g: 0, b: 0, a: 1}
+  ToggleColumnHeaderColor: {r: 0.9433962, g: 0.4761481, b: 0.4761481, a: 1}
+  ToggleColumnOddRowColor: {r: 0, g: 1, b: 0.026485443, a: 1}
+  ToggleColumnEvenRowColor: {r: 0.120016046, g: 0.8773585, b: 0.7064376, a: 1}
+  ToggleColumnOnColor: {r: 0.17007832, g: 0.42272735, b: 0.735849, a: 1}
+  ToggleColumnOffColor: {r: 0.8396226, g: 0.7083219, b: 0.20990565, a: 1}
+  ButtonColumnHeaderColor: {r: 0.990566, g: 0.21026169, b: 0.72744393, a: 1}
+  ButtonColumnOddRowColor: {r: 1, g: 1, b: 1, a: 1}
+  ButtonColumnEvenRowColor: {r: 0.95, g: 0.95, b: 0.95, a: 1}
+  HeaderBackgroundColor: {r: 1, g: 0, b: 0, a: 1}
+  HeaderItemOddColumnColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  HeaderItemEvenColumnColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
+  ContentOddRowColor: {r: 0.7216981, g: 0.7833673, b: 1, a: 1}
+  ContentEvenRowColor: {r: 0.52198297, g: 0.56673217, b: 0.9622642, a: 1}
+  ContentItemOddColumnColor: {r: 0, g: 0, b: 0, a: 0}
+  ContentItemEvenColumnColor: {r: 0, g: 0, b: 0, a: 0}
+  HighlightColor: {r: 1, g: 0.028497314, b: 0, a: 0.25}

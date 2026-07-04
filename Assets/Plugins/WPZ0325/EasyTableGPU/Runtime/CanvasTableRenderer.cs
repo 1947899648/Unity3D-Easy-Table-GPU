@@ -64,7 +64,7 @@ namespace WPZ0325.EasyTableGPU
             Rect r = _rectTransform.rect;
             return new Vector2(
                 localPoint.x + r.width * _rectTransform.pivot.x,
-                r.height * _rectTransform.pivot.y - localPoint.y
+                localPoint.y - r.height * (1f - _rectTransform.pivot.y)
             );
         }
     }

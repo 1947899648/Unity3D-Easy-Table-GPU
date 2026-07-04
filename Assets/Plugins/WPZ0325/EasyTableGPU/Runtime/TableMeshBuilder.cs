@@ -124,13 +124,22 @@ namespace WPZ0325.EasyTableGPU
                 bool rowPartial = highlightRow == endRow - 1 && partialRowFrac > 0f;
                 float effectiveH = rowPartial ? rowHeight * partialRowFrac : rowHeight;
                 Color hc = style.HighlightColor;
-                AddHighlightQuad(0f, hy, totalW, effectiveH, hc);
+
+                float visibleContentW = 0f;
+                for (int c = firstVisibleCol; c < lastVisibleCol && c < colWidths.Length; c++)
+                    visibleContentW += colWidths[c];
+                visibleContentW = Mathf.Min(visibleContentW, viewportW - fixedW);
+                float maxVisibleW = Mathf.Max(fixedW, fixedW - contentScrollX + visibleContentW);
+
+                AddHighlightQuad(0f, hy, maxVisibleW, effectiveH, hc);
                 if (highlightCol >= firstVisibleCol && highlightCol < lastVisibleCol)
                 {
                     float colX = fixedW - contentScrollX;
                     for (int c = firstVisibleCol; c < highlightCol; c++)
                         colX += colWidths[c];
                     float colW = colWidths[highlightCol];
+                    bool colPartial = highlightCol == lastVisibleCol - 1 && partialColFrac > 0f;
+                    if (colPartial) colW *= partialColFrac;
                     float visibleBot = rowYBase - (visibleRowCount - 1) * rowHeight - rowHeight;
                     AddHighlightQuad(colX, 0f, colW, -visibleBot, new Color(hc.r, hc.g, hc.b, hc.a * 0.5f));
                 }

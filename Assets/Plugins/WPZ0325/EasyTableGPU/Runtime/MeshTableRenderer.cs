@@ -51,6 +51,10 @@ namespace WPZ0325.EasyTableGPU
             }
         }
 
+        public void SetViewportSize(float width, float height)
+        {
+        }
+
         public Vector2 ScreenToTablePoint(Vector2 screenPosition, Camera camera)
         {
             Camera cam = camera ?? _renderCamera;

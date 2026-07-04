@@ -51,6 +51,12 @@ namespace WPZ0325.EasyTableGPU
                 _material.SetTexture("_FontTex", fontTexture);
         }
 
+        public void SetViewportSize(float width, float height)
+        {
+            if (_rectTransform != null)
+                _rectTransform.sizeDelta = new Vector2(width, height);
+        }
+
         public Vector2 ScreenToTablePoint(Vector2 screenPosition, Camera camera)
         {
             Camera cam = camera ?? _renderCamera;

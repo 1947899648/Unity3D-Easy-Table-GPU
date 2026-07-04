@@ -16,6 +16,11 @@ namespace WPZ0325.EasyTableGPU
         [Header("Config")]
         [SerializeField] TableStyleConfig _styleConfig;
         [SerializeField] Font _customFont;
+        [SerializeField] float _defaultColumnWidth = 150f;
+
+        [Header("Gizmos")]
+        [SerializeField] bool _showViewportGizmo = true;
+        [SerializeField] bool _showContentGizmo  = false;
 
         List<string>       _headers       = new List<string>();
         List<List<string>> _tableData     = new List<List<string>>();
@@ -30,9 +35,9 @@ namespace WPZ0325.EasyTableGPU
         float _scrollOffsetY;
         float _scrollOffsetX;
         int   _firstVisibleRow;
-        int   _visibleRowCount;
+        float _visibleRowCount;
         int   _firstVisibleCol;
-        int   _visibleColCount;
+        float _visibleColCount;
         bool  _dataDirty = true;
 
         int _pressedButtonRow = -1;
@@ -54,6 +59,26 @@ namespace WPZ0325.EasyTableGPU
         public float FixedColumnWidth =>
             (_styleConfig.IsShowToggleColumn ? _styleConfig.ToggleColumnWidth : 0f)
           + (_styleConfig.IsShowButtonColumn ? _styleConfig.ButtonColumnWidth : 0f);
+
+        public float ContentWidth
+        {
+            get
+            {
+                if (_effectiveColWidths == null || _effectiveColWidths.Length == 0) return 0f;
+                float sum = 0f;
+                for (int i = 0; i < _effectiveColWidths.Length; i++) sum += _effectiveColWidths[i];
+                return FixedColumnWidth + sum;
+            }
+        }
+
+        public float ContentHeight
+        {
+            get
+            {
+                if (_styleConfig == null) return 0f;
+                return _styleConfig.HeaderRowHeight + RowCount * _styleConfig.ContentRowHeight;
+            }
+        }
 
         void Awake()
         {
@@ -106,22 +131,32 @@ namespace WPZ0325.EasyTableGPU
             newCol = Mathf.Clamp(newCol, 0, _effectiveColWidths.Length - 1);
             float fixedW = FixedColumnWidth;
             float visContentW = Mathf.Max(1f, _viewportWidth - fixedW);
-            int visCols = 1;
+            float visCols = 0f;
             float acc = 0f;
             for (int i = newCol; i < _effectiveColWidths.Length; i++)
             {
-                acc += _effectiveColWidths[i];
-                visCols++;
-                if (acc >= visContentW) break;
+                float cw = _effectiveColWidths[i];
+                if (acc + cw < visContentW)
+                {
+                    acc += cw;
+                    visCols += 1f;
+                }
+                else
+                {
+                    if (visContentW > acc)
+                        visCols += (visContentW - acc) / cw;
+                    break;
+                }
             }
+            if (visCols <= 0f) visCols = _viewportWidth / Mathf.Max(1f, _defaultColumnWidth);
 
             bool rowChanged = newRow != _firstVisibleRow;
-            bool colChanged = newCol != _firstVisibleCol || _visibleColCount != visCols;
+            bool colChanged = newCol != _firstVisibleCol || Mathf.Abs(_visibleColCount - visCols) > 0.001f;
 
             if (rowChanged || colChanged || _dataDirty)
             {
                 _firstVisibleRow = newRow;
-                _visibleRowCount = Mathf.CeilToInt(_viewportHeight / rh) + 1;
+                _visibleRowCount = _viewportHeight / rh + 1;
                 _firstVisibleCol = newCol;
                 _visibleColCount = visCols;
             }
@@ -163,12 +198,20 @@ namespace WPZ0325.EasyTableGPU
                 _effectiveColWidths,
                 s.ContentRowHeight, s.HeaderRowHeight, fineScrollY,
                 _firstVisibleCol, _visibleColCount, fineScrollX,
+                _viewportWidth, _viewportHeight, s.ViewportFillColor,
                 s,
                 s.IsShowToggleColumn, s.ToggleColumnWidth, _toggleStates,
                 s.IsShowButtonColumn, s.ButtonColumnWidth, _buttonTexts,
                 _pressedButtonRow,
                 _highlightRow, _highlightCol);
 
+            if (_material != null)
+            {
+                float sc = _worldUnitScale;
+                _material.SetVector("_ClipRect", new Vector4(0, -_viewportHeight * sc, _viewportWidth * sc, 0));
+            }
+
+            _tableRenderer.SetViewportSize(_viewportWidth, _viewportHeight);
             _tableRenderer.ApplyMeshData();
         }
 
@@ -291,20 +334,15 @@ namespace WPZ0325.EasyTableGPU
         {
             int n = _headers.Count;
             if (n == 0) return new float[0];
-            TableStyleConfig s = _styleConfig;
             float[] w = new float[n];
-            float used = 0f; int unspec = 0;
-            float[] manual = s.ColumnWidths;
+            float[] manual = _styleConfig != null ? _styleConfig.ColumnWidths : null;
             for (int i = 0; i < n; i++)
             {
                 if (manual != null && i < manual.Length && manual[i] > 0f)
-                    { w[i] = manual[i]; used += manual[i]; }
-                else unspec++;
+                    w[i] = manual[i];
+                else
+                    w[i] = _defaultColumnWidth;
             }
-            float remain = Mathf.Max(0f, s.TableTotalWidth - used);
-            float def = unspec > 0 ? remain / unspec : 0f;
-            for (int i = 0; i < n; i++)
-                if (w[i] <= 0f) w[i] = Mathf.Max(def, 20f);
             return w;
         }
 
@@ -388,6 +426,50 @@ namespace WPZ0325.EasyTableGPU
             if (r < 0) return false;
             row = r;
             return true;
+        }
+
+        // ============== Editor Gizmos ==============
+
+        void OnDrawGizmos()
+        {
+            if (_rendererComponent == null) return;
+
+            Transform t = _rendererComponent.transform;
+            float scale = _worldUnitScale;
+
+            if (_showViewportGizmo)
+            {
+                float vw = _viewportWidth * scale;
+                float vh = _viewportHeight * scale;
+                DrawGizmoRect(t, 0, 0, vw, vh, new Color(0, 1, 1, 0.4f));
+            }
+
+            if (_showContentGizmo)
+            {
+                float cw = ContentWidth * scale;
+                float ch = 0f;
+                if (_styleConfig != null)
+                {
+                    int rows = RowCount > 0 ? RowCount : 10;
+                    ch = (_styleConfig.HeaderRowHeight + rows * _styleConfig.ContentRowHeight) * scale;
+                }
+                if (cw > 0f && ch > 0f)
+                    DrawGizmoRect(t, 0, 0, cw, ch, new Color(1, 0.9f, 0, 0.3f));
+            }
+        }
+
+        void DrawGizmoRect(Transform t, float x, float y, float w, float h, Color color)
+        {
+            Vector3 tl = t.TransformPoint(new Vector3(x, y, 0));
+            Vector3 tr = t.TransformPoint(new Vector3(x + w, y, 0));
+            Vector3 bl = t.TransformPoint(new Vector3(x, y - h, 0));
+            Vector3 br = t.TransformPoint(new Vector3(x + w, y - h, 0));
+
+            Gizmos.color = color;
+            Gizmos.DrawLine(tl, tr);
+            Gizmos.DrawLine(tr, br);
+            Gizmos.DrawLine(br, bl);
+            Gizmos.DrawLine(bl, tl);
         }
     }
 }

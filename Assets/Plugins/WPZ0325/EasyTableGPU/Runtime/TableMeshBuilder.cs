@@ -22,9 +22,10 @@ namespace WPZ0325.EasyTableGPU
 
         public void BuildTableMesh(Mesh mesh,
             List<string> headers, List<List<string>> data,
-            int firstRow, int visibleRowCount, float[] colWidths,
+            int firstRow, float visibleRowCount, float[] colWidths,
             float rowHeight, float headerHeight, float fineScrollY,
-            int firstVisibleCol, int visibleColCount, float contentScrollX,
+            int firstVisibleCol, float visibleColCount, float contentScrollX,
+            float viewportW, float viewportH, Color fillColor,
             TableStyleConfig style,
             bool showToggle, float toggleWidth, List<bool> toggleStates,
             bool showButton, float buttonWidth, List<string> buttonTexts,
@@ -35,11 +36,14 @@ namespace WPZ0325.EasyTableGPU
             if (data == null || data.Count == 0 || colWidths == null || colWidths.Length == 0)
                 { ApplyToMesh(mesh); return; }
 
+            if (viewportW > 0f && viewportH > 0f)
+                AddBgQuad(0f, 0f, viewportW, viewportH, fillColor);
+
             float padL = style.CellPaddingLeft;
             float padR = style.CellPaddingRight;
             float fixedW = (showToggle ? toggleWidth : 0f) + (showButton ? buttonWidth : 0f);
 
-            int lastVisibleCol = Mathf.Min(firstVisibleCol + visibleColCount, colWidths.Length);
+            int lastVisibleCol = Mathf.Min(firstVisibleCol + Mathf.CeilToInt(visibleColCount), colWidths.Length);
             float totalContentW = 0f;
             for (int c = 0; c < colWidths.Length; c++) totalContentW += colWidths[c];
             float totalW = fixedW + totalContentW;
@@ -60,7 +64,7 @@ namespace WPZ0325.EasyTableGPU
                 hx += cw;
             }
 
-            int endRow = Mathf.Min(firstRow + visibleRowCount, data.Count);
+            int endRow = Mathf.Min(firstRow + Mathf.CeilToInt(visibleRowCount), data.Count);
             float rowYBase = -headerHeight + fineScrollY;
             for (int r = firstRow; r < endRow; r++)
             {

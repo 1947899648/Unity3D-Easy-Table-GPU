@@ -14,10 +14,9 @@ namespace WPZ0325.EasyTableGPU
         public float ButtonColumnWidth  = 120f;
         public float HeaderRowHeight    = 60f;
         public float ContentRowHeight   = 50f;
-        public float TableTotalWidth    = 800f;
 
         [Header("Column Widths")]
-        [Tooltip("空数组或元素为0的列 = 均分剩余宽度")]
+        [Tooltip("空数组或元素<=0的列 = 使用Controller中的DefaultColumnWidth")]
         public float[] ColumnWidths;
 
         [Header("Text Style")]
@@ -50,6 +49,9 @@ namespace WPZ0325.EasyTableGPU
 
         [Header("Highlight")]
         public Color HighlightColor = new Color(0.2f, 0.5f, 0.9f, 0.25f);
+
+        [Header("Viewport")]
+        public Color ViewportFillColor = Color.black;
 
         public bool IsOdd(int n) => (n & 1) == 1;
 

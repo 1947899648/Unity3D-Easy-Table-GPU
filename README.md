@@ -82,7 +82,6 @@ TableGpuController (核心控制器 / Core Controller)
 > **当前版本处于早期开发阶段，存在已知 Bug | This is an early-stage development version with known bugs**
 
 - 部分场景加载后可能需要手动调整组件引用
-- Canvas 模式下高亮滚动的边缘情况未完全覆盖
 - HitTest 在极端滚动位置偶现偏移
 - `ScreenToTablePoint` 失败时使用哨兵值检测，可能在某些边界情况误判
 - 编辑器扩展（CustomEditor、PropertyDrawer）尚未实现

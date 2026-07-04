@@ -44,6 +44,9 @@ namespace WPZ0325.EasyTableGPU
             float fixedW = (showToggle ? toggleWidth : 0f) + (showButton ? buttonWidth : 0f);
 
             int lastVisibleCol = Mathf.Min(firstVisibleCol + Mathf.CeilToInt(visibleColCount), colWidths.Length);
+            int fullCols = Mathf.FloorToInt(visibleColCount);
+            float partialColFrac = visibleColCount - fullCols;
+            if (partialColFrac <= 0.001f) partialColFrac = 0f;
             float totalContentW = 0f;
             for (int c = 0; c < colWidths.Length; c++) totalContentW += colWidths[c];
             float totalW = fixedW + totalContentW;
@@ -56,20 +59,27 @@ namespace WPZ0325.EasyTableGPU
             for (int c = firstVisibleCol; c < lastVisibleCol && c < headers.Count; c++)
             {
                 float cw = colWidths[c];
+                bool colPartial = c == lastVisibleCol - 1 && partialColFrac > 0f;
+                float effectiveCw = colPartial ? cw * partialColFrac : cw;
                 Color bg = style.IsOdd(c) ? style.HeaderItemOddColumnColor : style.HeaderItemEvenColumnColor;
-                AddBgQuad(hx, 0f, cw, headerHeight, bg);
+                AddBgQuad(hx, 0f, effectiveCw, headerHeight, bg);
                 string text = headers[c] ?? "";
                 if (text.Length > 0)
-                    LayoutText(text, hx + padL, hx + cw - padR, hBaseline, style.HeaderTextColor);
+                    LayoutText(text, hx + padL, hx + effectiveCw - padR, hBaseline, style.HeaderTextColor);
                 hx += cw;
             }
 
             int endRow = Mathf.Min(firstRow + Mathf.CeilToInt(visibleRowCount), data.Count);
+            int fullDataRows = Mathf.FloorToInt(visibleRowCount);
+            float partialRowFrac = visibleRowCount - fullDataRows;
+            if (partialRowFrac <= 0.001f) partialRowFrac = 0f;
             float rowYBase = -headerHeight + fineScrollY;
             for (int r = firstRow; r < endRow; r++)
             {
+                bool rowPartial = r == endRow - 1 && partialRowFrac > 0f;
+                float effectiveRowH = rowPartial ? rowHeight * partialRowFrac : rowHeight;
                 float cellY = rowYBase - (r - firstRow) * rowHeight;
-                float baseline = CalcBaseline(cellY, rowHeight);
+                float baseline = CalcBaseline(cellY, effectiveRowH);
                 float cx = 0f;
 
                 if (showToggle)
@@ -77,7 +87,7 @@ namespace WPZ0325.EasyTableGPU
                     int idx = r < toggleStates.Count ? r : (toggleStates.Count - 1);
                     Color baseCol = toggleStates[idx] ? style.ToggleColumnOnColor : style.ToggleColumnOffColor;
                     Color rowCol = style.IsOdd(r) ? style.ToggleColumnOddRowColor : style.ToggleColumnEvenRowColor;
-                    AddBgQuad(cx, cellY, toggleWidth, rowHeight, Color.Lerp(baseCol, rowCol, 0.15f));
+                    AddBgQuad(cx, cellY, toggleWidth, effectiveRowH, Color.Lerp(baseCol, rowCol, 0.15f));
                     cx += toggleWidth;
                 }
 
@@ -87,7 +97,7 @@ namespace WPZ0325.EasyTableGPU
                     Color bg = style.IsOdd(r) ? style.ButtonColumnOddRowColor : style.ButtonColumnEvenRowColor;
                     if (r == pressedButtonRow)
                         bg = new Color(bg.r * 0.6f, bg.g * 0.6f, bg.b * 0.6f, bg.a);
-                    AddBgQuad(cx, cellY, buttonWidth, rowHeight, bg);
+                    AddBgQuad(cx, cellY, buttonWidth, effectiveRowH, bg);
                     string text = buttonTexts[idx] ?? "";
                     if (text.Length > 0)
                         LayoutText(text, cx + padL, cx + buttonWidth - padR, baseline, style.CellTextColor);
@@ -98,10 +108,12 @@ namespace WPZ0325.EasyTableGPU
                 for (int c = firstVisibleCol; c < lastVisibleCol && c < data[r].Count; c++)
                 {
                     float cw = colWidths[c];
-                    AddBgQuad(dStart, cellY, cw, rowHeight, style.GetContentCellBg(r, c));
+                    bool colPartial = c == lastVisibleCol - 1 && partialColFrac > 0f;
+                    float effectiveCw = colPartial ? cw * partialColFrac : cw;
+                    AddBgQuad(dStart, cellY, effectiveCw, effectiveRowH, style.GetContentCellBg(r, c));
                     string text = data[r][c] ?? "";
                     if (text.Length > 0)
-                        LayoutText(text, dStart + padL, dStart + cw - padR, baseline, style.CellTextColor);
+                        LayoutText(text, dStart + padL, dStart + effectiveCw - padR, baseline, style.CellTextColor);
                     dStart += cw;
                 }
             }
@@ -109,8 +121,10 @@ namespace WPZ0325.EasyTableGPU
             if (highlightRow >= firstRow && highlightRow < endRow)
             {
                 float hy = rowYBase - (highlightRow - firstRow) * rowHeight;
+                bool rowPartial = highlightRow == endRow - 1 && partialRowFrac > 0f;
+                float effectiveH = rowPartial ? rowHeight * partialRowFrac : rowHeight;
                 Color hc = style.HighlightColor;
-                AddHighlightQuad(0f, hy, totalW, rowHeight, hc);
+                AddHighlightQuad(0f, hy, totalW, effectiveH, hc);
                 if (highlightCol >= firstVisibleCol && highlightCol < lastVisibleCol)
                 {
                     float colX = fixedW - contentScrollX;

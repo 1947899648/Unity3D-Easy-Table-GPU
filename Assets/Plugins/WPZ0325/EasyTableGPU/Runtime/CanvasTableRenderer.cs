@@ -11,6 +11,8 @@ namespace WPZ0325.EasyTableGPU
         CanvasRenderer _canvasRenderer;
         Mesh _mesh;
         Material _material;
+        float _viewportW;
+        float _viewportH;
 
         public Camera RenderCamera => _renderCamera;
         public bool IsVisible => _canvasRenderer != null && !_canvasRenderer.cull;
@@ -41,6 +43,9 @@ namespace WPZ0325.EasyTableGPU
             {
                 _canvasRenderer.SetMesh(_mesh);
                 _canvasRenderer.SetMaterial(_material, null);
+                Material mat = _canvasRenderer.GetMaterial();
+                if (mat != null)
+                    mat.SetVector("_ClipRect", new Vector4(0, -_viewportH, _viewportW, 0));
             }
         }
 
@@ -53,6 +58,8 @@ namespace WPZ0325.EasyTableGPU
 
         public void SetViewportSize(float width, float height)
         {
+            _viewportW = width;
+            _viewportH = height;
             if (_rectTransform != null)
                 _rectTransform.sizeDelta = new Vector2(width, height);
         }

@@ -60,7 +60,7 @@ public class TableGpuDemo3D : MonoBehaviour
         }
 
         float scrollY = Input.mouseScrollDelta.y * 30f;
-        if (Mathf.Abs(scrollY) > 0.01f)
+        if (Mathf.Abs(scrollY) > 0.01f && _controller.IsMouseOverTable(Input.mousePosition))
         {
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {

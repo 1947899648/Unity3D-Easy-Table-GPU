@@ -51,9 +51,6 @@ namespace WPZ0325.EasyTableGPU
             for (int c = 0; c < colWidths.Length; c++) totalContentW += colWidths[c];
             float totalW = fixedW + totalContentW;
 
-            if (fixedW > 0f)
-                AddBgQuad(0f, 0f, fixedW, headerHeight, style.HeaderBackgroundColor);
-
             float hBaseline = CalcBaseline(0f, headerHeight);
             float hx = fixedW - contentScrollX;
             for (int c = firstVisibleCol; c < lastVisibleCol && c < headers.Count; c++)
@@ -61,13 +58,23 @@ namespace WPZ0325.EasyTableGPU
                 float cw = colWidths[c];
                 bool colPartial = c == lastVisibleCol - 1 && partialColFrac > 0f;
                 float effectiveCw = colPartial ? cw * partialColFrac : cw;
+
+                float renderX = Mathf.Max(hx, 0f);
+                float renderW = effectiveCw;
+                float colRight = hx + effectiveCw;
+                if (colRight > viewportW) renderW = viewportW - renderX;
+                if (renderW <= 0f) { hx += cw; continue; }
+
                 Color bg = style.IsOdd(c) ? style.HeaderItemOddColumnColor : style.HeaderItemEvenColumnColor;
-                AddBgQuad(hx, 0f, effectiveCw, headerHeight, bg);
+                AddBgQuad(renderX, 0f, renderW, headerHeight, bg);
                 string text = headers[c] ?? "";
                 if (text.Length > 0)
-                    LayoutText(text, hx + padL, hx + effectiveCw - padR, hBaseline, style.HeaderTextColor);
+                    LayoutText(text, renderX + padL, renderX + renderW - padR, hBaseline, style.HeaderTextColor);
                 hx += cw;
             }
+
+            if (fixedW > 0f)
+                AddBgQuad(0f, 0f, fixedW, headerHeight, style.HeaderBackgroundColor);
 
             int endRow = Mathf.Min(firstRow + Mathf.CeilToInt(visibleRowCount), data.Count);
             int fullDataRows = Mathf.FloorToInt(visibleRowCount);
@@ -80,6 +87,27 @@ namespace WPZ0325.EasyTableGPU
                 float effectiveRowH = rowPartial ? rowHeight * partialRowFrac : rowHeight;
                 float cellY = rowYBase - (r - firstRow) * rowHeight;
                 float baseline = CalcBaseline(cellY, effectiveRowH);
+
+                float dStart = fixedW - contentScrollX;
+                for (int c = firstVisibleCol; c < lastVisibleCol && c < data[r].Count; c++)
+                {
+                    float cw = colWidths[c];
+                    bool colPartial = c == lastVisibleCol - 1 && partialColFrac > 0f;
+                    float effectiveCw = colPartial ? cw * partialColFrac : cw;
+
+                    float renderX = Mathf.Max(dStart, 0f);
+                    float renderW = effectiveCw;
+                    float colRight = dStart + effectiveCw;
+                    if (colRight > viewportW) renderW = viewportW - renderX;
+                    if (renderW <= 0f) { dStart += cw; continue; }
+
+                    AddBgQuad(renderX, cellY, renderW, effectiveRowH, style.GetContentCellBg(r, c));
+                    string text = data[r][c] ?? "";
+                    if (text.Length > 0)
+                        LayoutText(text, renderX + padL, renderX + renderW - padR, baseline, style.CellTextColor);
+                    dStart += cw;
+                }
+
                 float cx = 0f;
 
                 if (showToggle)
@@ -102,19 +130,6 @@ namespace WPZ0325.EasyTableGPU
                     if (text.Length > 0)
                         LayoutText(text, cx + padL, cx + buttonWidth - padR, baseline, style.CellTextColor);
                     cx += buttonWidth;
-                }
-
-                float dStart = fixedW - contentScrollX;
-                for (int c = firstVisibleCol; c < lastVisibleCol && c < data[r].Count; c++)
-                {
-                    float cw = colWidths[c];
-                    bool colPartial = c == lastVisibleCol - 1 && partialColFrac > 0f;
-                    float effectiveCw = colPartial ? cw * partialColFrac : cw;
-                    AddBgQuad(dStart, cellY, effectiveCw, effectiveRowH, style.GetContentCellBg(r, c));
-                    string text = data[r][c] ?? "";
-                    if (text.Length > 0)
-                        LayoutText(text, dStart + padL, dStart + effectiveCw - padR, baseline, style.CellTextColor);
-                    dStart += cw;
                 }
             }
 

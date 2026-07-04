@@ -372,6 +372,14 @@ namespace WPZ0325.EasyTableGPU
             return -1;
         }
 
+        public bool IsMouseOverTable(Vector2 screen)
+        {
+            if (_tableRenderer == null || _styleConfig == null) return false;
+            Vector2 local = _tableRenderer.ScreenToTablePoint(screen, _renderCamera);
+            return local.x >= 0f && local.x <= _viewportWidth
+                && local.y >= -_viewportHeight && local.y <= 0f;
+        }
+
         public bool HitTest(Vector2 screen, out int row, out int col)
         {
             row = -1; col = -1;

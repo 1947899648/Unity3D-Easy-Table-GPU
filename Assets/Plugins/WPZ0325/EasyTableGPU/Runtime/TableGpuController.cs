@@ -156,7 +156,7 @@ namespace WPZ0325.EasyTableGPU
             if (rowChanged || colChanged || _dataDirty)
             {
                 _firstVisibleRow = newRow;
-                _visibleRowCount = _viewportHeight / rh + 1;
+                _visibleRowCount = Mathf.Max(0f, _viewportHeight - s.HeaderRowHeight) / rh;
                 _firstVisibleCol = newCol;
                 _visibleColCount = visCols;
             }

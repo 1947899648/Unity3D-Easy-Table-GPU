@@ -4,8 +4,14 @@ using TMPro;
 
 namespace WPZ0325.EasyTableGPU
 {
+    /// <summary>
+    /// EasyTableGPU 核心控制器。管理表格数据、虚拟视口滚动、Mesh 重建调度、
+    /// 点击测试和交互状态，是整个插件的入口点。
+    /// </summary>
     public class TableGpuController : MonoBehaviour
     {
+        #region 序列化字段
+
         [Header("Render Setup")]
         [SerializeField] MonoBehaviour _rendererComponent;
         [SerializeField] Material _material;
@@ -22,6 +28,10 @@ namespace WPZ0325.EasyTableGPU
         [Header("Gizmos")]
         [SerializeField] bool _showViewportGizmo = true;
         [SerializeField] bool _showContentGizmo  = false;
+
+        #endregion
+
+        #region 数据与状态字段
 
         List<string>       _headers       = new List<string>();
         List<List<string>> _tableData     = new List<List<string>>();
@@ -50,17 +60,30 @@ namespace WPZ0325.EasyTableGPU
         float _lastScrollY = -999f;
         float _lastScrollX = -999f;
 
+        #endregion
+
+        #region 事件
+
         public event System.Action<int, int>  OnCellClicked;
         public event System.Action<int, bool> OnToggleChanged;
         public event System.Action<int>       OnButtonClicked;
 
+        #endregion
+
+        #region 属性
+
+        /// <summary>当前数据行数。</summary>
         public int RowCount    => _tableData.Count;
+
+        /// <summary>当前表头列数。</summary>
         public int ColumnCount => _headers.Count;
 
+        /// <summary>固定列（Toggle + Button）的总宽度。</summary>
         public float FixedColumnWidth =>
             (_styleConfig.IsShowToggleColumn ? _styleConfig.ToggleColumnWidth : 0f)
           + (_styleConfig.IsShowButtonColumn ? _styleConfig.ButtonColumnWidth : 0f);
 
+        /// <summary>所有数据列（含固定列）的总内容宽度。</summary>
         public float ContentWidth
         {
             get
@@ -72,6 +95,7 @@ namespace WPZ0325.EasyTableGPU
             }
         }
 
+        /// <summary>表头行加所有数据行的总内容高度。</summary>
         public float ContentHeight
         {
             get
@@ -80,6 +104,10 @@ namespace WPZ0325.EasyTableGPU
                 return _styleConfig.HeaderRowHeight + RowCount * _styleConfig.ContentRowHeight;
             }
         }
+
+        #endregion
+
+        #region Unity 生命周期
 
         void Awake()
         {
@@ -102,6 +130,15 @@ namespace WPZ0325.EasyTableGPU
             UpdateScroll();
         }
 
+        #endregion
+
+        #region 初始化
+
+        /// <summary>
+        /// 初始化 TMP SDF 字体辅助器。
+        /// 优先使用 Inspector 中指定的 _fontAsset，
+        /// 其次使用 TMP Settings 中的默认字体。
+        /// </summary>
         void InitFont()
         {
             TMP_FontAsset asset = _fontAsset;
@@ -116,6 +153,14 @@ namespace WPZ0325.EasyTableGPU
             _fontHelper.PreCacheAscii();
         }
 
+        #endregion
+
+        #region 滚动与渲染
+
+        /// <summary>
+        /// 根据当前滚动偏移计算可见行列范围。
+        /// 仅在滚动位置变化或数据标记为脏时触发 Mesh 重建。
+        /// </summary>
         void UpdateScroll()
         {
             TableStyleConfig s = _styleConfig;
@@ -184,6 +229,10 @@ namespace WPZ0325.EasyTableGPU
             _lastScrollX = _scrollOffsetX;
         }
 
+        /// <summary>
+        /// 调用 TableMeshBuilder 重建表格 Mesh，
+        /// 更新 Shader 裁剪矩形和 SDF 渲染参数，提交到渲染后端。
+        /// </summary>
         void RebuildMesh()
         {
             TableStyleConfig s = _styleConfig;
@@ -223,8 +272,11 @@ namespace WPZ0325.EasyTableGPU
             _tableRenderer.ApplyMeshData();
         }
 
-        // ============== Public API ==============
+        #endregion
 
+        #region 数据操作 API
+
+        /// <summary>设置表格数据，重置滚动偏移和可见范围，重新计算有效列宽。</summary>
         public void SetData(List<string> headers, List<List<string>> rowData)
         {
             if (headers == null || rowData == null) { ClearTable(); return; }
@@ -243,6 +295,7 @@ namespace WPZ0325.EasyTableGPU
             _effectiveColWidths = CalcEffectiveColWidths();
         }
 
+        /// <summary>清空所有表格数据和交互状态，清除 Mesh。</summary>
         public void ClearTable()
         {
             _headers.Clear(); _tableData.Clear(); _toggleStates.Clear(); _buttonTexts.Clear();
@@ -253,6 +306,7 @@ namespace WPZ0325.EasyTableGPU
             _tableRenderer?.GetMesh()?.Clear();
         }
 
+        /// <summary>在末尾追加一行数据，自动补齐不足表头宽度。</summary>
         public void AddRow(List<string> rowData)
         {
             if (_headers.Count == 0) { Debug.LogWarning("AddRow: no headers"); return; }
@@ -262,6 +316,7 @@ namespace WPZ0325.EasyTableGPU
             _dataDirty = true;
         }
 
+        /// <summary>移除指定索引的行，同时清理关联的按钮和按钮状态。</summary>
         public void RemoveRow(int i)
         {
             if (i < 0 || i >= _tableData.Count) return;
@@ -271,22 +326,35 @@ namespace WPZ0325.EasyTableGPU
             _dataDirty = true;
         }
 
+        /// <summary>修改指定单元格的文本内容。</summary>
         public void SetCell(int row, int col, string val)
         {
             if (row < 0 || row >= _tableData.Count || col < 0 || col >= _headers.Count) return;
             _tableData[row][col] = val ?? ""; _dataDirty = true;
         }
 
+        #endregion
+
+        #region 滚动控制 API
+
+        /// <summary>设置垂直滚动的绝对偏移（像素）。</summary>
         public void SetScrollOffsetY(float o) => _scrollOffsetY = Mathf.Max(0f, o);
+
+        /// <summary>以归一化值 [0,1] 设置垂直滚动位置。</summary>
         public void SetScrollNormalizedY(float n)
         {
             TableStyleConfig s = _styleConfig; if (s == null) return;
             float totalH = _tableData.Count * s.ContentRowHeight;
             _scrollOffsetY = Mathf.Max(0f, n * Mathf.Max(0f, totalH - _viewportHeight));
         }
+
+        /// <summary>获取当前垂直滚动偏移（像素）。</summary>
         public float GetScrollOffsetY() => _scrollOffsetY;
 
+        /// <summary>设置水平滚动的绝对偏移（像素）。</summary>
         public void SetScrollOffsetX(float o) => _scrollOffsetX = Mathf.Max(0f, o);
+
+        /// <summary>以归一化值 [0,1] 设置水平滚动位置。</summary>
         public void SetScrollNormalizedX(float n)
         {
             float totalW = 0f;
@@ -295,10 +363,18 @@ namespace WPZ0325.EasyTableGPU
             float visW = Mathf.Max(1f, _viewportWidth - FixedColumnWidth);
             _scrollOffsetX = Mathf.Max(0f, n * Mathf.Max(0f, totalW - visW));
         }
+
+        /// <summary>获取当前水平滚动偏移（像素）。</summary>
         public float GetScrollOffsetX() => _scrollOffsetX;
 
+        /// <summary>获取当前第一个可见行的行号。</summary>
         public int GetFirstVisibleRow() => _firstVisibleRow;
 
+        #endregion
+
+        #region 交互状态 API
+
+        /// <summary>设置指定行的 Toggle 状态，触发 OnToggleChanged 事件。</summary>
         public void SetToggleState(int row, bool on)
         {
             if (row < 0 || row >= _toggleStates.Count || _toggleStates[row] == on) return;
@@ -306,38 +382,52 @@ namespace WPZ0325.EasyTableGPU
             OnToggleChanged?.Invoke(row, on);
         }
 
+        /// <summary>获取指定行的 Toggle 开关状态。</summary>
         public bool GetToggleState(int r) => r >= 0 && r < _toggleStates.Count && _toggleStates[r];
 
+        /// <summary>设置指定行 Button 列的显示文本。</summary>
         public void SetButtonText(int row, string t)
         {
             if (row < 0 || row >= _buttonTexts.Count) return;
             _buttonTexts[row] = t ?? ""; _dataDirty = true;
         }
 
+        /// <summary>标记指定行按钮为按下状态（视觉变暗）。</summary>
         public void SetButtonPressed(int row)
         {
             if (row == _pressedButtonRow) return;
             _pressedButtonRow = row; _dataDirty = true;
         }
 
+        /// <summary>释放按钮按下状态，恢复视觉。</summary>
         public void SetButtonReleased()
         {
             if (_pressedButtonRow < 0) return;
             _pressedButtonRow = -1; _dataDirty = true;
         }
 
+        /// <summary>设置高亮单元格（行列交叉高亮）。</summary>
         public void SetHighlight(int row, int col)
         {
             if (row == _highlightRow && col == _highlightCol) return;
             _highlightRow = row; _highlightCol = col; _dataDirty = true;
         }
 
+        /// <summary>清除所有高亮状态。</summary>
         public void ClearHighlight()
         {
             if (_highlightRow < 0 && _highlightCol < 0) return;
             _highlightRow = -1; _highlightCol = -1; _dataDirty = true;
         }
 
+        #endregion
+
+        #region 辅助计算
+
+        /// <summary>
+        /// 根据 StyleConfig 中设置的列宽和默认列宽计算每列的实际渲染宽度。
+        /// 未设置（<=0）的列使用 _defaultColumnWidth。
+        /// </summary>
         float[] CalcEffectiveColWidths()
         {
             int n = _headers.Count;
@@ -354,8 +444,11 @@ namespace WPZ0325.EasyTableGPU
             return w;
         }
 
-        // ============== Hit Testing ==============
+        #endregion
 
+        #region 点击测试
+
+        /// <summary>将视口局部 Y 坐标转换为数据行号，考虑表头偏移和滚动。</summary>
         int RowFromLocalY(float localY)
         {
             TableStyleConfig s = _styleConfig;
@@ -367,6 +460,7 @@ namespace WPZ0325.EasyTableGPU
             return (r >= 0 && r < _tableData.Count) ? r : -1;
         }
 
+        /// <summary>将视口局部 X 坐标转换为数据列号，考虑固定列偏移和水平滚动。</summary>
         int ColFromLocalX(float localX)
         {
             if (_effectiveColWidths == null) return -1;
@@ -380,6 +474,7 @@ namespace WPZ0325.EasyTableGPU
             return -1;
         }
 
+        /// <summary>判断鼠标是否悬停在表格视口区域内。</summary>
         public bool IsMouseOverTable(Vector2 screen)
         {
             if (_tableRenderer == null || _styleConfig == null) return false;
@@ -388,6 +483,7 @@ namespace WPZ0325.EasyTableGPU
                 && local.y >= -_viewportHeight && local.y <= 0f;
         }
 
+        /// <summary>对指定屏幕坐标执行点击测试，返回对应的数据单元格行列号。</summary>
         public bool HitTest(Vector2 screen, out int row, out int col)
         {
             row = -1; col = -1;
@@ -409,6 +505,7 @@ namespace WPZ0325.EasyTableGPU
             return true;
         }
 
+        /// <summary>测试点击是否落在 Toggle 列范围内，返回对应行号。</summary>
         public bool HitTestToggleCol(Vector2 screen, out int row)
         {
             row = -1;
@@ -426,6 +523,7 @@ namespace WPZ0325.EasyTableGPU
             return true;
         }
 
+        /// <summary>测试点击是否落在 Button 列范围内，返回对应行号。</summary>
         public bool HitTestButtonCol(Vector2 screen, out int row)
         {
             row = -1;
@@ -444,7 +542,9 @@ namespace WPZ0325.EasyTableGPU
             return true;
         }
 
-        // ============== Editor Gizmos ==============
+        #endregion
+
+        #region 编辑器辅助
 
         void OnDrawGizmos()
         {
@@ -474,6 +574,7 @@ namespace WPZ0325.EasyTableGPU
             }
         }
 
+        /// <summary>在场景视图中绘制一个矩形线框，用于可视化视口和内容区域。</summary>
         void DrawGizmoRect(Transform t, float x, float y, float w, float h, Color color)
         {
             Vector3 tl = t.TransformPoint(new Vector3(x, y, 0));
@@ -487,5 +588,7 @@ namespace WPZ0325.EasyTableGPU
             Gizmos.DrawLine(br, bl);
             Gizmos.DrawLine(bl, tl);
         }
+
+        #endregion
     }
 }

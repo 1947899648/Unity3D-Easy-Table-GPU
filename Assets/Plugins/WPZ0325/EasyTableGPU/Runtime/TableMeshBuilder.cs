@@ -3,8 +3,14 @@ using UnityEngine;
 
 namespace WPZ0325.EasyTableGPU
 {
+    /// <summary>
+    /// 表格 Mesh 构建器。将表格数据、样式配置和可见区域信息转换为
+    /// 顶点、UV、颜色和三角形索引，填入目标 Mesh 中。
+    /// </summary>
     public class TableMeshBuilder
     {
+        #region 字段与常量
+
         TableFontHelper _fontHelper;
 
         List<Vector3> _verts  = new List<Vector3>(16384);
@@ -17,9 +23,25 @@ namespace WPZ0325.EasyTableGPU
         const float HIGHL_Z = -0.005f;
         float _scale = 1f;
 
+        #endregion
+
+        #region 配置
+
+        /// <summary>绑定字体辅助器，用于获取字符字形度量。</summary>
         public void SetFont(TableFontHelper fontHelper) { _fontHelper = fontHelper; }
+
+        /// <summary>设置世界坐标缩放因子（用于 3D 模式下的单位转换）。</summary>
         public void SetScale(float scale) { _scale = scale; }
 
+        #endregion
+
+        #region 主构建
+
+        /// <summary>
+        /// 构建完整表格 Mesh。按以下层次依次生成：
+        /// 视口背景 → 表头行 → 数据行（可见区域）→ 固定列（Toggle / Button）→ 高亮覆盖层。
+        /// 支持行列的部分可见（Partial Row / Col）处理。
+        /// </summary>
         public void BuildTableMesh(Mesh mesh,
             List<string> headers, List<List<string>> data,
             int firstRow, float visibleRowCount, float[] colWidths,
@@ -163,6 +185,38 @@ namespace WPZ0325.EasyTableGPU
             ApplyToMesh(mesh);
         }
 
+        #endregion
+
+        #region 网格图元
+
+        /// <summary>添加一个纯色背景四边形（uv2.x = 0，Shader 中走纯色分支）。</summary>
+        void AddBgQuad(float x, float y, float w, float h, Color color)
+        {
+            int vi = _verts.Count;
+            _verts.Add(new Vector3(x, y, 0f)); _verts.Add(new Vector3(x + w, y, 0f));
+            _verts.Add(new Vector3(x, y - h, 0f)); _verts.Add(new Vector3(x + w, y - h, 0f));
+            for (int i = 0; i < 4; i++) _uv0.Add(Vector2.zero);
+            for (int i = 0; i < 4; i++) _uv1.Add(new Vector2(0f, 0f));
+            for (int i = 0; i < 4; i++) _colors.Add(color);
+            _tris.Add(vi); _tris.Add(vi + 1); _tris.Add(vi + 2);
+            _tris.Add(vi + 1); _tris.Add(vi + 3); _tris.Add(vi + 2);
+        }
+
+        /// <summary>添加一个字体字形四边形（uv2.x = 1，Shader 中走 SDF 纹理采样分支）。</summary>
+        void AddGlyphQuad(float x, float y, float w, float h, Vector2 uvBL, Vector2 uvTR, Color color)
+        {
+            int vi = _verts.Count; float z = TEXT_Z;
+            _verts.Add(new Vector3(x, y, z)); _verts.Add(new Vector3(x + w, y, z));
+            _verts.Add(new Vector3(x, y - h, z)); _verts.Add(new Vector3(x + w, y - h, z));
+            _uv0.Add(new Vector2(uvBL.x, uvTR.y)); _uv0.Add(new Vector2(uvTR.x, uvTR.y));
+            _uv0.Add(new Vector2(uvBL.x, uvBL.y)); _uv0.Add(new Vector2(uvTR.x, uvBL.y));
+            for (int i = 0; i < 4; i++) _uv1.Add(new Vector2(1f, 0f));
+            for (int i = 0; i < 4; i++) _colors.Add(color);
+            _tris.Add(vi); _tris.Add(vi + 1); _tris.Add(vi + 2);
+            _tris.Add(vi + 1); _tris.Add(vi + 3); _tris.Add(vi + 2);
+        }
+
+        /// <summary>添加一个半透明高亮覆盖四边形（放在背景之上、文字之下）。</summary>
         void AddHighlightQuad(float x, float y, float w, float h, Color color)
         {
             int vi = _verts.Count;
@@ -178,6 +232,14 @@ namespace WPZ0325.EasyTableGPU
             _tris.Add(vi + 1); _tris.Add(vi + 3); _tris.Add(vi + 2);
         }
 
+        #endregion
+
+        #region 文本排版
+
+        /// <summary>
+        /// 在指定矩形区域内逐字形排版文本。
+        /// 超出右侧边界时截断并在行末绘制省略号。
+        /// </summary>
         void LayoutText(string text, float left, float right, float baseline, Color color)
         {
             float penX = left;
@@ -196,6 +258,7 @@ namespace WPZ0325.EasyTableGPU
             if (truncated) DrawEllipsis(right, baseline, color);
         }
 
+        /// <summary>在指定位置绘制省略号 "..."，用于文本截断的视觉提示。</summary>
         void DrawEllipsis(float right, float baseline, Color color)
         {
             float tw = 0f; float[] ws = { 0f, 0f, 0f };
@@ -213,6 +276,10 @@ namespace WPZ0325.EasyTableGPU
                 }
         }
 
+        /// <summary>
+        /// 计算文字基线 Y 坐标。
+        /// 以字符 'A' 的度量信息为参考，将文字垂直居中于单元格。
+        /// </summary>
         float CalcBaseline(float cellTop, float cellH)
         {
             if (_fontHelper.TryGetGlyph('A', out _, out _, out float maxY,
@@ -221,34 +288,19 @@ namespace WPZ0325.EasyTableGPU
             return cellTop - cellH * 0.35f;
         }
 
-        void AddBgQuad(float x, float y, float w, float h, Color color)
-        {
-            int vi = _verts.Count;
-            _verts.Add(new Vector3(x, y, 0f)); _verts.Add(new Vector3(x + w, y, 0f));
-            _verts.Add(new Vector3(x, y - h, 0f)); _verts.Add(new Vector3(x + w, y - h, 0f));
-            for (int i = 0; i < 4; i++) _uv0.Add(Vector2.zero);
-            for (int i = 0; i < 4; i++) _uv1.Add(new Vector2(0f, 0f));
-            for (int i = 0; i < 4; i++) _colors.Add(color);
-            _tris.Add(vi); _tris.Add(vi + 1); _tris.Add(vi + 2);
-            _tris.Add(vi + 1); _tris.Add(vi + 3); _tris.Add(vi + 2);
-        }
+        #endregion
 
-        void AddGlyphQuad(float x, float y, float w, float h, Vector2 uvBL, Vector2 uvTR, Color color)
-        {
-            int vi = _verts.Count; float z = TEXT_Z;
-            _verts.Add(new Vector3(x, y, z)); _verts.Add(new Vector3(x + w, y, z));
-            _verts.Add(new Vector3(x, y - h, z)); _verts.Add(new Vector3(x + w, y - h, z));
-            _uv0.Add(new Vector2(uvBL.x, uvTR.y)); _uv0.Add(new Vector2(uvTR.x, uvTR.y));
-            _uv0.Add(new Vector2(uvBL.x, uvBL.y)); _uv0.Add(new Vector2(uvTR.x, uvBL.y));
-            for (int i = 0; i < 4; i++) _uv1.Add(new Vector2(1f, 0f));
-            for (int i = 0; i < 4; i++) _colors.Add(color);
-            _tris.Add(vi); _tris.Add(vi + 1); _tris.Add(vi + 2);
-            _tris.Add(vi + 1); _tris.Add(vi + 3); _tris.Add(vi + 2);
-        }
+        #region 网格输入输出
 
+        /// <summary>清空所有顶点缓冲区，准备下一帧的 Mesh 构建。</summary>
         void ClearLists()
             { _verts.Clear(); _uv0.Clear(); _uv1.Clear(); _colors.Clear(); _tris.Clear(); }
 
+        /// <summary>
+        /// 将缓冲区的顶点数据写入目标 Mesh。
+        /// 若设置了缩放因子则对所有顶点坐标进行缩放。
+        /// Mesh bounds 设置为极大值以避免不期望的视锥体剔除。
+        /// </summary>
         void ApplyToMesh(Mesh mesh)
         {
             mesh.Clear();
@@ -266,5 +318,7 @@ namespace WPZ0325.EasyTableGPU
             }
             mesh.bounds = new Bounds(Vector3.zero, new Vector3(10000, 10000, 10000));
         }
+
+        #endregion
     }
 }

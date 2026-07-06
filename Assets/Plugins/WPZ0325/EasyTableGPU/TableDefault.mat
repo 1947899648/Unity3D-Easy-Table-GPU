@@ -21,11 +21,13 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _FontTex:
-        m_Texture: {fileID: 10103, guid: 0000000000000000e000000000000000, type: 0}
+        m_Texture: {fileID: 3145407786071437724, guid: d00ce6da1bfc16f46873737be993fa4a, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
-    m_Floats: []
+    m_Floats:
+    - _SDF_Spread: 0.05
+    - _SDF_Threshold: 0.45
     m_Colors:
-    - _ClipRect: {r: 0, g: -628, b: 1092.4, a: 0}
+    - _ClipRect: {r: 0, g: -400, b: 1200, a: 0}
   m_BuildTextureStacks: []

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.TextCore;
+using TMPro;
 
 namespace WPZ0325.EasyTableGPU
 {
@@ -16,23 +18,26 @@ namespace WPZ0325.EasyTableGPU
             public float glyphHeight;
         }
 
-        Font _font;
-        int _fontSize;
+        TMP_FontAsset _fontAsset;
+        float _targetFontSize;
+        float _metricScale;
         Dictionary<char, GlyphInfo> _cache = new Dictionary<char, GlyphInfo>();
 
-        public Font Font => _font;
-        public Texture FontTexture => _font.material.mainTexture;
-        public int FontSize => _fontSize;
+        public Texture FontTexture => _fontAsset?.atlasTexture;
+        public TMP_FontAsset FontAsset => _fontAsset;
 
-        public TableFontHelper(Font font, int fontSize)
+        public TableFontHelper(TMP_FontAsset fontAsset, float targetFontSize)
         {
-            _font = font;
-            _fontSize = fontSize;
+            _fontAsset = fontAsset;
+            _targetFontSize = targetFontSize;
+            if (_fontAsset != null && _fontAsset.faceInfo.pointSize > 0)
+                _metricScale = targetFontSize / _fontAsset.faceInfo.pointSize * _fontAsset.faceInfo.scale;
+            else
+                _metricScale = 1f;
         }
 
         public void PreCache(string chars)
         {
-            _font.RequestCharactersInTexture(chars, _fontSize);
             foreach (char c in chars)
             {
                 if (!_cache.ContainsKey(c))
@@ -42,10 +47,8 @@ namespace WPZ0325.EasyTableGPU
 
         public void PreCacheAscii()
         {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder(95);
             for (int i = 32; i <= 126; i++)
-                sb.Append((char)i);
-            PreCache(sb.ToString());
+                CacheChar((char)i);
         }
 
         public bool TryGetGlyph(char c,
@@ -77,20 +80,32 @@ namespace WPZ0325.EasyTableGPU
 
         bool CacheChar(char c)
         {
-            _font.RequestCharactersInTexture(c.ToString(), _fontSize);
+            if (_fontAsset == null) return false;
 
-            if (!_font.GetCharacterInfo(c, out CharacterInfo ci, _fontSize))
+            if (!_fontAsset.characterLookupTable.TryGetValue(c, out TMP_Character tmpChar))
                 return false;
+
+            if (!_fontAsset.glyphLookupTable.TryGetValue(tmpChar.glyphIndex, out Glyph glyph))
+                return false;
+
+            float aw = _fontAsset.atlasWidth;
+            float ah = _fontAsset.atlasHeight;
+            float rx = glyph.glyphRect.x;
+            float ry = glyph.glyphRect.y;
+            float rw = glyph.glyphRect.width;
+            float rh = glyph.glyphRect.height;
+
+            float sc = _metricScale;
 
             _cache[c] = new GlyphInfo
             {
-                uvBottomLeft = ci.uvBottomLeft,
-                uvTopRight   = ci.uvTopRight,
-                advance      = ci.advance,
-                minX         = ci.minX,
-                maxY         = ci.maxY,
-                glyphWidth   = ci.glyphWidth,
-                glyphHeight  = ci.glyphHeight,
+                uvBottomLeft = new Vector2(rx / aw, ry / ah),
+                uvTopRight   = new Vector2((rx + rw) / aw, (ry + rh) / ah),
+                advance      = glyph.metrics.horizontalAdvance * sc,
+                minX         = glyph.metrics.horizontalBearingX * sc,
+                maxY         = glyph.metrics.horizontalBearingY * sc,
+                glyphWidth   = glyph.metrics.width * sc,
+                glyphHeight  = glyph.metrics.height * sc,
             };
             return true;
         }

@@ -4,6 +4,8 @@ Shader "WPZ0325/TableFont"
     {
         _FontTex ("Font Texture", 2D) = "white" {}
         _ClipRect ("Clip Rect (x=minX, y=minY, z=maxX, w=maxY)", Vector) = (0,0,0,0)
+        _SDF_Threshold ("SDF Threshold", Range(0, 1)) = 0.5
+        _SDF_Spread ("SDF Spread", Range(0, 0.2)) = 0.05
     }
 
     SubShader
@@ -41,6 +43,8 @@ Shader "WPZ0325/TableFont"
 
             sampler2D _FontTex;
             float4 _ClipRect;
+            float _SDF_Threshold;
+            float _SDF_Spread;
 
             v2f vert (appdata v)
             {
@@ -63,8 +67,10 @@ Shader "WPZ0325/TableFont"
                     return i.color;
                 else
                 {
-                    fixed a = tex2D(_FontTex, i.uv).a;
-                    return fixed4(i.color.rgb, i.color.a * a);
+                float distance = tex2D(_FontTex, i.uv).a;
+                float spread = fwidth(distance) + _SDF_Spread;
+                float a = smoothstep(_SDF_Threshold - spread, _SDF_Threshold + spread, distance);
+                return fixed4(i.color.rgb, i.color.a * a);
                 }
             }
             ENDCG

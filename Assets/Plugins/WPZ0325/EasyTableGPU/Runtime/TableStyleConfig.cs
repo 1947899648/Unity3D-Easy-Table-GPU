@@ -53,6 +53,10 @@ namespace WPZ0325.EasyTableGPU
         [Header("Viewport")]
         public Color ViewportFillColor = Color.black;
 
+        [Header("SDF Rendering")]
+        [Range(0f, 1f)]  public float SdfThreshold = 0.5f;
+        [Range(0f, 0.2f)] public float SdfSpread   = 0.05f;
+
         public bool IsOdd(int n) => (n & 1) == 1;
 
         public Color GetContentCellBg(int row, int col)

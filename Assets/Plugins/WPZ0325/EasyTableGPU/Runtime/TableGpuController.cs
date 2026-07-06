@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 namespace WPZ0325.EasyTableGPU
 {
@@ -15,7 +16,7 @@ namespace WPZ0325.EasyTableGPU
 
         [Header("Config")]
         [SerializeField] TableStyleConfig _styleConfig;
-        [SerializeField] Font _customFont;
+        [SerializeField] TMP_FontAsset _fontAsset;
         [SerializeField] float _defaultColumnWidth = 150f;
 
         [Header("Gizmos")]
@@ -103,10 +104,15 @@ namespace WPZ0325.EasyTableGPU
 
         void InitFont()
         {
-            Font f = _customFont;
-            if (f == null) f = Font.CreateDynamicFontFromOSFont("Arial", _styleConfig.TextFontSize);
-            if (f == null) f = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            _fontHelper = new TableFontHelper(f, _styleConfig.TextFontSize);
+            TMP_FontAsset asset = _fontAsset;
+            if (asset == null && TMP_Settings.instance != null)
+                asset = TMP_Settings.defaultFontAsset;
+            if (asset == null)
+            {
+                Debug.LogError("TableGpuController: No TMP_FontAsset assigned and no default found");
+                return;
+            }
+            _fontHelper = new TableFontHelper(asset, _styleConfig.TextFontSize);
             _fontHelper.PreCacheAscii();
         }
 
@@ -209,6 +215,8 @@ namespace WPZ0325.EasyTableGPU
             {
                 float sc = _worldUnitScale;
                 _material.SetVector("_ClipRect", new Vector4(0, -_viewportHeight * sc, _viewportWidth * sc, 0));
+                _material.SetFloat("_SDF_Threshold", s.SdfThreshold);
+                _material.SetFloat("_SDF_Spread", s.SdfSpread);
             }
 
             _tableRenderer.SetViewportSize(_viewportWidth, _viewportHeight);

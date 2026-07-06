@@ -28,6 +28,7 @@
 - **仮想ビューポート** — 可視領域の行と列のみを描画。描画複雑度は O(visible) で、総データ量に依存しない
 - **インタラクション機能** — セルクリック、行ハイライト、トグル列、ボタン列、垂直/水平スクロール
 - **ScriptableObject 設定** — すべてのスタイル（色、フォントサイズ、列幅など）は単一の Style アセットで集中管理。複数スキン対応
+- **SDF フォントレンダリング** — TextMeshPro Signed Distance Field により、任意の拡大縮小でジャギーのないクリアな文字を実現。中国語・日本語・韓国語・ラテン文字に対応。
 
 ---
 
@@ -49,6 +50,15 @@ TableGpuController (コアコントローラ)
 ---
 
 ## クイックスタート
+
+### 環境準備
+
+1. プロジェクトを初めて開くと、**TextMeshPro Essential Resources** のインポートが促されます。「Import」をクリックしてください。
+2. `Window → TextMeshPro → Font Asset Creator` で SDF フォントアセットを作成します：
+   - フォントファイル：[Noto Sans CJK](https://github.com/notofonts/noto-cjk) を推奨（日中韓・ラテン文字対応）
+   - Atlas Resolution: `4096 × 4096`
+   - Character Set: 必要な文字セットを選択
+3. Hierarchy で `TableGpuController` を選択し、生成した SDF フォントアセットを `_fontAsset` フィールドにドラッグします。
 
 ### 3D シーン
 
@@ -85,6 +95,7 @@ TableGpuController (コアコントローラ)
 - 極端なスクロール位置で HitTest が若干ずれることがあります
 - `ScreenToTablePoint` は失敗検出にセンチネル値を使用しており、境界ケースで誤判定が発生する可能性があります
 - エディタ拡張（CustomEditor、PropertyDrawer）は未実装です
+- プラグインにはデフォルトフォントが同梱されていません。TMP SDF フォントアセットを手動で作成し、Controller に割り当てる必要があります。
 
 問題は今後のバージョンで順次修正予定です。Issue・PR を歓迎します。
 

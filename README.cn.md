@@ -28,6 +28,7 @@
 - **虚拟视口** — 仅渲染可见区域的行列，渲染复杂度 O(visible)，与数据总量无关
 - **内置交互** — 支持单元格点击、行高亮、Toggle 列、Button 列、垂直/水平滚动
 - **ScriptableObject 配置** — 所有样式（颜色、字号、列宽等）通过样式资产集中管理，支持多套皮肤
+- **SDF 字体渲染** — 基于 TextMeshPro Signed Distance Field 技术，文字任意缩放无锯齿，支持中文、日文、韩文等多语言字符显示
 
 ---
 
@@ -49,6 +50,15 @@ TableGpuController (核心控制器)
 ---
 
 ## 快速开始
+
+### 环境准备
+
+1. 首次打开项目时，Unity 会提示导入 **TextMeshPro Essential Resources**，点击导入
+2. 使用 `Window → TextMeshPro → Font Asset Creator` 创建 SDF 字体资产：
+   - 字体文件：推荐 [Noto Sans CJK](https://github.com/notofonts/noto-cjk)（支持中/日/韩/拉丁字符）
+   - Atlas Resolution: `4096 × 4096`
+   - Character Set: 选择需要的字符集
+3. 在 Hierarchy 中选中 `TableGpuController`，将生成的 SDF 字体资产拖入 `_fontAsset` 字段
 
 ### 3D 场景
 
@@ -85,6 +95,7 @@ TableGpuController (核心控制器)
 - HitTest 在极端滚动位置偶现偏移
 - `ScreenToTablePoint` 失败时使用哨兵值检测，可能在某些边界情况误判
 - 编辑器扩展（CustomEditor、PropertyDrawer）尚未实现
+- 插件当前不内置默认字体，需要手动创建 TMP SDF 字体资产并指定到 Controller
 
 问题修复优先级将随版本迭代逐步处理。欢迎提交 Issue。
 

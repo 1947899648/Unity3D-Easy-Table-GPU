@@ -28,6 +28,7 @@
 - **Virtual Viewport** — Only renders visible rows and columns. Rendering complexity is O(visible), independent of total data size.
 - **Built-in Interaction** — Cell click, row highlight, toggle columns, button columns, vertical/horizontal scrolling.
 - **ScriptableObject Config** — All styles (colors, font size, column widths, etc.) managed via a single Style asset. Supports multiple skins.
+- **SDF Font Rendering** — Uses TextMeshPro Signed Distance Field for crisp, alias-free text at any scale. Supports CJK (Chinese, Japanese, Korean) and Latin characters.
 
 ---
 
@@ -49,6 +50,15 @@ Core concept: **Controller → Builder generates vertex data → Renderer submit
 ---
 
 ## Quick Start
+
+### Prerequisites
+
+1. On first opening the project, Unity will prompt you to import **TextMeshPro Essential Resources** — click Import.
+2. Create an SDF font asset via `Window → TextMeshPro → Font Asset Creator`:
+   - Font file: Recommended [Noto Sans CJK](https://github.com/notofonts/noto-cjk) (supports CJK + Latin)
+   - Atlas Resolution: `4096 × 4096`
+   - Character Set: Choose the characters needed for your use case
+3. Select the `TableGpuController` in the Hierarchy and drag the generated SDF font asset into the `_fontAsset` field.
 
 ### 3D Scene
 
@@ -85,6 +95,7 @@ Core concept: **Controller → Builder generates vertex data → Renderer submit
 - HitTest may have slight offset at extreme scroll positions
 - `ScreenToTablePoint` uses a sentinel value for failure detection, which may cause false negatives in edge cases
 - Editor extensions (CustomEditor, PropertyDrawer) are not yet implemented
+- The plugin does not ship with a built-in default font. A TMP SDF font asset must be created manually and assigned to the Controller.
 
 Issues will be addressed in future iterations. Issues and PRs are welcome.
 

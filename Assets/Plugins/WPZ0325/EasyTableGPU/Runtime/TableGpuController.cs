@@ -29,6 +29,9 @@ namespace WPZ0325.EasyTableGPU
         [SerializeField] bool _showViewportGizmo = true;
         [SerializeField] bool _showContentGizmo  = false;
 
+        [Header("Interaction")]
+        [SerializeField] bool _enableHoverHighlight = true;
+
         #endregion
 
         #region 数据与状态字段
@@ -57,6 +60,9 @@ namespace WPZ0325.EasyTableGPU
 
         bool _initialized;
 
+        int _lastHoverRow = -1;
+        int _lastHoverCol = -1;
+
         float _lastScrollY = -999f;
         float _lastScrollX = -999f;
 
@@ -77,6 +83,13 @@ namespace WPZ0325.EasyTableGPU
 
         /// <summary>当前表头列数。</summary>
         public int ColumnCount => _headers.Count;
+
+        /// <summary>是否启用鼠标悬停十字光标高亮。</summary>
+        public bool EnableHoverHighlight
+        {
+            get => _enableHoverHighlight;
+            set => _enableHoverHighlight = value;
+        }
 
         /// <summary>固定列（Toggle + Button）的总宽度。</summary>
         public float FixedColumnWidth =>
@@ -128,6 +141,8 @@ namespace WPZ0325.EasyTableGPU
         {
             if (!_initialized) return;
             UpdateScroll();
+            if (_enableHoverHighlight)
+                UpdateHighlight();
         }
 
         #endregion
@@ -270,6 +285,55 @@ namespace WPZ0325.EasyTableGPU
 
             _tableRenderer.SetViewportSize(_viewportWidth, _viewportHeight);
             _tableRenderer.ApplyMeshData();
+        }
+
+        /// <summary>
+        /// 鼠标悬停十字光标高亮。根据鼠标位置执行 HitTest，
+        /// 更新高亮行、列或清除高亮。仅在 _enableHoverHighlight 为 true 时调用。
+        /// </summary>
+        void UpdateHighlight()
+        {
+            Vector2 mp = Input.mousePosition;
+
+            if (HitTest(mp, out int row, out int col))
+            {
+                if (row != _lastHoverRow || col != _lastHoverCol)
+                {
+                    _lastHoverRow = row;
+                    _lastHoverCol = col;
+                    SetHighlight(row, col);
+                }
+                return;
+            }
+
+            if (HitTestToggleCol(mp, out int tr))
+            {
+                if (tr != _lastHoverRow || _lastHoverCol != -2)
+                {
+                    _lastHoverRow = tr;
+                    _lastHoverCol = -2;
+                    SetHighlight(tr, -1);
+                }
+                return;
+            }
+
+            if (HitTestButtonCol(mp, out int br))
+            {
+                if (br != _lastHoverRow || _lastHoverCol != -3)
+                {
+                    _lastHoverRow = br;
+                    _lastHoverCol = -3;
+                    SetHighlight(br, -1);
+                }
+                return;
+            }
+
+            if (_lastHoverRow >= 0)
+            {
+                _lastHoverRow = -1;
+                _lastHoverCol = -1;
+                ClearHighlight();
+            }
         }
 
         #endregion

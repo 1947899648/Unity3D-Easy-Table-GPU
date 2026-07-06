@@ -19,9 +19,6 @@ public class TableGpuDemo3D : MonoBehaviour
     float _scrollPosX;
     bool  _subscribed;
 
-    int _lastHoverRow = -1;
-    int _lastHoverCol = -1;
-
     void Start()
     {
         if (_controller != null)
@@ -74,58 +71,11 @@ public class TableGpuDemo3D : MonoBehaviour
             }
         }
 
-        UpdateHighlight();
-
         if (Input.GetMouseButtonDown(0))
             TryClick();
 
         if (Input.GetMouseButtonUp(0))
             _controller.SetButtonReleased();
-    }
-
-    void UpdateHighlight()
-    {
-        Vector2 mp = Input.mousePosition;
-
-        if (_controller.HitTest(mp, out int row, out int col))
-        {
-            if (row != _lastHoverRow || col != _lastHoverCol)
-            {
-                _lastHoverRow = row;
-                _lastHoverCol = col;
-                _controller.SetHighlight(row, col);
-            }
-            return;
-        }
-
-        if (_controller.HitTestToggleCol(mp, out int tr))
-        {
-            if (tr != _lastHoverRow || _lastHoverCol != -2)
-            {
-                _lastHoverRow = tr;
-                _lastHoverCol = -2;
-                _controller.SetHighlight(tr, -1);
-            }
-            return;
-        }
-
-        if (_controller.HitTestButtonCol(mp, out int br))
-        {
-            if (br != _lastHoverRow || _lastHoverCol != -3)
-            {
-                _lastHoverRow = br;
-                _lastHoverCol = -3;
-                _controller.SetHighlight(br, -1);
-            }
-            return;
-        }
-
-        if (_lastHoverRow >= 0)
-        {
-            _lastHoverRow = -1;
-            _lastHoverCol = -1;
-            _controller.ClearHighlight();
-        }
     }
 
     void TryClick()

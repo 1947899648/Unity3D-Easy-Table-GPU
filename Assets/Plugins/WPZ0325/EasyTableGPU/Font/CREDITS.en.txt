@@ -1,0 +1,20 @@
+=== Font Attribution ===
+Font Name:      Noto Sans CJK
+Source:         https://github.com/notofonts/noto-cjk
+License:        SIL Open Font License 1.1
+
+=== Acknowledgments ===
+Thanks to the Google Noto Fonts team for providing open-source fonts
+for all the world's writing systems.
+
+"Noto" stands for "No Tofu" — the project's mission is to eliminate
+the blank boxes (tofu) that appear when a system lacks the glyphs
+to display a character.
+
+Noto Sans CJK covers Simplified Chinese, Traditional Chinese,
+Japanese, Korean, and Latin characters. It is one of the most
+comprehensive open-source multilingual fonts available today.
+
+=== Usage ===
+EasyTableGPU uses this font to provide GPU-accelerated table rendering
+with full Chinese, Japanese, Korean, and Latin character support.

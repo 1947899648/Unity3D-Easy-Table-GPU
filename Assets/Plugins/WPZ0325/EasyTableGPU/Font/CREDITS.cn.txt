@@ -1,0 +1,16 @@
+=== 字体来源 ===
+字体名称：Noto Sans CJK
+来源仓库：https://github.com/notofonts/noto-cjk
+许可证：SIL Open Font License 1.1
+
+=== 致谢 ===
+感谢 Google Noto Fonts 团队为全球文字提供的开源字体支持。
+"Noto" 意为 "No Tofu"（消灭豆腐块），致力于让所有文字都能被正确显示，
+消除因缺失字形而产生的空白方块。
+
+Noto Sans CJK 覆盖简体中文、繁体中文、日文、韩文及拉丁字符，
+是当前最完整的开源多语言字体之一。
+
+=== 项目用途 ===
+EasyTableGPU 使用此字体实现 GPU 加速表格渲染中的
+中文、日文、韩文及拉丁字符的正确显示。

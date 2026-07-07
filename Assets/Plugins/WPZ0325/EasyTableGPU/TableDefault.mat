@@ -28,6 +28,7 @@ Material:
     m_Floats:
     - _SDF_Spread: 0.05
     - _SDF_Threshold: 0.45
+    - _ZTest: 8
     m_Colors:
     - _ClipRect: {r: 0, g: -400, b: 1200, a: 0}
   m_BuildTextureStacks: []

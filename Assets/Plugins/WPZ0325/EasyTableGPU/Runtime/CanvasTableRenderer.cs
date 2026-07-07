@@ -7,6 +7,7 @@ namespace WPZ0325.EasyTableGPU
     /// 通过 RectTransformUtility 实现屏幕坐标到表格局部坐标的转换。
     /// </summary>
     [RequireComponent(typeof(RectTransform))]
+    [RequireComponent(typeof(Canvas))]
     public class CanvasTableRenderer : MonoBehaviour, ITableRenderer
     {
         #region 字段
@@ -15,6 +16,7 @@ namespace WPZ0325.EasyTableGPU
 
         RectTransform _rectTransform;
         CanvasRenderer _canvasRenderer;
+        Canvas _localCanvas;
         Mesh _mesh;
         Material _material;
         float _viewportW;
@@ -40,7 +42,41 @@ namespace WPZ0325.EasyTableGPU
             _canvasRenderer = GetComponent<CanvasRenderer>();
             if (_canvasRenderer == null)
                 _canvasRenderer = gameObject.AddComponent<CanvasRenderer>();
+            _localCanvas = GetComponent<Canvas>();
+            if (_localCanvas == null)
+                _localCanvas = gameObject.AddComponent<Canvas>();
+            _localCanvas.additionalShaderChannels =
+                AdditionalCanvasShaderChannels.TexCoord1 |
+                AdditionalCanvasShaderChannels.TexCoord2;
             InitMesh();
+        }
+
+        #endregion
+
+        #region RenderLayer
+
+        /// <summary>
+        /// 切换渲染层级。
+        /// Normal  — 还原 Canvas 原始排序，参与层级遮挡。
+        /// TopMost — 设置 sortingOrder 为最大值，始终渲染在最前。
+        /// </summary>
+        public void SetRenderLayer(RenderLayer layer)
+        {
+            if (_localCanvas == null)
+            {
+                _localCanvas = GetComponent<Canvas>();
+                if (_localCanvas == null)
+                    _localCanvas = gameObject.AddComponent<Canvas>();
+            }
+            if (layer == RenderLayer.TopMost)
+            {
+                _localCanvas.overrideSorting = true;
+                _localCanvas.sortingOrder = short.MaxValue;
+            }
+            else
+            {
+                _localCanvas.overrideSorting = false;
+            }
         }
 
         #endregion
@@ -69,7 +105,11 @@ namespace WPZ0325.EasyTableGPU
                 _canvasRenderer.SetMaterial(_material, null);
                 Material mat = _canvasRenderer.GetMaterial();
                 if (mat != null)
+                {
                     mat.SetVector("_ClipRect", new Vector4(0, -_viewportH, _viewportW, 0));
+                    if (_material != null)
+                        mat.SetTexture("_FontTex", _material.GetTexture("_FontTex"));
+                }
             }
         }
 

@@ -251,6 +251,7 @@ MonoBehaviour:
   _rendererComponent: {fileID: 402}
   _material: {fileID: 2100000, guid: b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6, type: 2}
   _renderCamera: {fileID: 0}
+  _renderLayer: 0
   _viewportHeight: 400
   _viewportWidth: 1200
   _worldUnitScale: 1
@@ -259,6 +260,7 @@ MonoBehaviour:
   _defaultColumnWidth: 150
   _showViewportGizmo: 1
   _showContentGizmo: 0
+  _enableHoverHighlight: 1
 --- !u!1 &400
 GameObject:
   m_ObjectHideFlags: 0
@@ -270,6 +272,7 @@ GameObject:
   - component: {fileID: 401}
   - component: {fileID: 402}
   - component: {fileID: 403}
+  - component: {fileID: 404}
   m_Layer: 5
   m_Name: ContentArea
   m_TagString: Untagged
@@ -318,6 +321,27 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 400}
   m_CullTransparentMesh: 1
+--- !u!223 &404
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 400}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_AdditionalShaderChannelsFlag: 3
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!1 &500
 GameObject:
   m_ObjectHideFlags: 0

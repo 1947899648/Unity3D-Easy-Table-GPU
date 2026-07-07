@@ -3,6 +3,17 @@ using UnityEngine;
 namespace WPZ0325.EasyTableGPU
 {
     /// <summary>
+    /// 表格渲染层级模式。
+    /// Normal  — 参与深度/Canvas 层级排序，可被其他物体遮挡。
+    /// TopMost — 始终渲染在最前面，不被任何物体遮挡。
+    /// </summary>
+    public enum RenderLayer
+    {
+        Normal,
+        TopMost
+    }
+
+    /// <summary>
     /// 表格渲染后端接口。实现此接口以支持不同的渲染方式（3D Mesh 或 UI Canvas）。
     /// </summary>
     public interface ITableRenderer
@@ -24,5 +35,8 @@ namespace WPZ0325.EasyTableGPU
 
         /// <summary>当前渲染组件是否可见（用于裁剪剔除判断）。</summary>
         bool IsVisible { get; }
+
+        /// <summary>切换渲染层级（Normal / TopMost）。</summary>
+        void SetRenderLayer(RenderLayer layer);
     }
 }

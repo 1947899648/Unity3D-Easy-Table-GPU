@@ -16,6 +16,7 @@ namespace WPZ0325.EasyTableGPU
         [SerializeField] MonoBehaviour _rendererComponent;
         [SerializeField] Material _material;
         [SerializeField] Camera _renderCamera;
+        [SerializeField] RenderLayer _renderLayer = RenderLayer.Normal;
         [SerializeField] float _viewportHeight = 400f;
         [SerializeField] float _viewportWidth  = 600f;
         [SerializeField] float _worldUnitScale = 0.01f;
@@ -59,6 +60,7 @@ namespace WPZ0325.EasyTableGPU
         int _highlightCol     = -1;
 
         bool _initialized;
+        RenderLayer _lastRenderLayer;
 
         int _lastHoverRow = -1;
         int _lastHoverCol = -1;
@@ -89,6 +91,17 @@ namespace WPZ0325.EasyTableGPU
         {
             get => _enableHoverHighlight;
             set => _enableHoverHighlight = value;
+        }
+
+        /// <summary>渲染层级模式。Normal 参与遮挡排序，TopMost 始终渲染在最前。</summary>
+        public RenderLayer RenderLayer
+        {
+            get => _renderLayer;
+            set
+            {
+                _renderLayer = value;
+                _tableRenderer?.SetRenderLayer(value);
+            }
         }
 
         /// <summary>固定列（Toggle + Button）的总宽度。</summary>
@@ -134,12 +147,19 @@ namespace WPZ0325.EasyTableGPU
             _builder.SetFont(_fontHelper);
             _builder.SetScale(_worldUnitScale);
             _tableRenderer.SetMaterialProperties(_material, _fontHelper.FontTexture);
+            _lastRenderLayer = _renderLayer;
+            _tableRenderer.SetRenderLayer(_renderLayer);
             _initialized = true;
         }
 
         void Update()
         {
             if (!_initialized) return;
+            if (_renderLayer != _lastRenderLayer)
+            {
+                _lastRenderLayer = _renderLayer;
+                _tableRenderer?.SetRenderLayer(_renderLayer);
+            }
             UpdateScroll();
             if (_enableHoverHighlight)
                 UpdateHighlight();

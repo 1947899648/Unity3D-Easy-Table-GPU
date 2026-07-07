@@ -42,6 +42,26 @@ namespace WPZ0325.EasyTableGPU
 
         #endregion
 
+        #region RenderLayer
+
+        /// <summary>
+        /// 切换渲染层级。
+        /// Normal  — ZTest LEqual（参与深度测试，可被遮挡）。
+        /// TopMost — ZTest Always（始终通过深度测试，渲染在最前）。
+        /// </summary>
+        public void SetRenderLayer(RenderLayer layer)
+        {
+            if (_material == null) return;
+            var zTest = layer == RenderLayer.TopMost
+                ? UnityEngine.Rendering.CompareFunction.Always
+                : UnityEngine.Rendering.CompareFunction.LessEqual;
+            _material.SetFloat("_ZTest", (float)zTest);
+            if (_meshRenderer != null && _meshRenderer.sharedMaterial == _material)
+                _meshRenderer.sharedMaterial = _material;
+        }
+
+        #endregion
+
         #region ITableRenderer 实现
 
         /// <summary>创建动态 Mesh 实例，标记为 Dynamic 以支持高频更新。</summary>

@@ -6,12 +6,14 @@ Shader "WPZ0325/TableFont"
         _ClipRect ("Clip Rect (x=minX, y=minY, z=maxX, w=maxY)", Vector) = (0,0,0,0)
         _SDF_Threshold ("SDF Threshold", Range(0, 1)) = 0.5
         _SDF_Spread ("SDF Spread", Range(0, 0.2)) = 0.05
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("ZTest", Float) = 4
     }
 
     SubShader
     {
         Tags { "Queue"="Transparent" "RenderType"="Transparent" "IgnoreProjector"="True" "PreviewType"="Plane" }
         LOD 100
+        ZTest [_ZTest]
         ZWrite Off
         Blend SrcAlpha OneMinusSrcAlpha
         Cull Off

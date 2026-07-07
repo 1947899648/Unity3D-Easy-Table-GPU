@@ -11,8 +11,7 @@ namespace WPZ0325.EasyTableGPU
     {
         #region 字段
 
-        [SerializeField] Camera _renderCamera;
-        [SerializeField] float _worldUnitScale = 0.01f;
+        float _worldUnitScale;
 
         MeshFilter _meshFilter;
         MeshRenderer _meshRenderer;
@@ -22,9 +21,6 @@ namespace WPZ0325.EasyTableGPU
         #endregion
 
         #region 属性
-
-        /// <summary>3D 渲染使用的摄像机（若未指定则由 Controller 传入）。</summary>
-        public Camera RenderCamera => _renderCamera;
 
         /// <summary>MeshRenderer 是否可见。</summary>
         public bool IsVisible => _meshRenderer != null && _meshRenderer.isVisible;
@@ -101,13 +97,16 @@ namespace WPZ0325.EasyTableGPU
         {
         }
 
+        /// <summary>同步世界坐标缩放因子（由 Controller 初始化时调用）。</summary>
+        public void SetWorldUnitScale(float scale) => _worldUnitScale = scale;
+
         /// <summary>
         /// 通过摄像机射线与模型平面投影，将屏幕坐标转换为表格局部坐标。
         /// 表格原点为视口左上角，X 轴向右，Y 轴向下。
         /// </summary>
-        public Vector2 ScreenToTablePoint(Vector2 screenPosition, Camera camera)
+        public Vector2 ScreenToTablePoint(Vector2 screenPosition)
         {
-            Camera cam = camera ?? _renderCamera;
+            Camera cam = Camera.main;
             if (cam == null || _meshFilter == null)
                 return -Vector2.one;
 

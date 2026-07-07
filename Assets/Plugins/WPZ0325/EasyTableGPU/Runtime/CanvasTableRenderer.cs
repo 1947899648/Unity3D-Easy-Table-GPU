@@ -12,8 +12,6 @@ namespace WPZ0325.EasyTableGPU
     {
         #region 字段
 
-        [SerializeField] Camera _renderCamera;
-
         RectTransform _rectTransform;
         CanvasRenderer _canvasRenderer;
         Canvas _localCanvas;
@@ -25,9 +23,6 @@ namespace WPZ0325.EasyTableGPU
         #endregion
 
         #region 属性
-
-        /// <summary>Canvas 渲染使用的摄像机。</summary>
-        public Camera RenderCamera => _renderCamera;
 
         /// <summary>CanvasRenderer 是否未被裁剪。</summary>
         public bool IsVisible => _canvasRenderer != null && !_canvasRenderer.cull;
@@ -130,13 +125,16 @@ namespace WPZ0325.EasyTableGPU
                 _rectTransform.sizeDelta = new Vector2(width, height);
         }
 
+        /// <summary>Canvas 模式无需世界坐标缩放，空实现。</summary>
+        public void SetWorldUnitScale(float scale) { }
+
         /// <summary>
         /// 通过 RectTransformUtility 将屏幕坐标转换为表格局部坐标。
         /// 表格原点为视口左上角，X 轴向右，Y 轴向下。
         /// </summary>
-        public Vector2 ScreenToTablePoint(Vector2 screenPosition, Camera camera)
+        public Vector2 ScreenToTablePoint(Vector2 screenPosition)
         {
-            Camera cam = camera ?? _renderCamera;
+            Camera cam = _localCanvas?.worldCamera;
             if (_rectTransform == null)
                 return -Vector2.one;
 

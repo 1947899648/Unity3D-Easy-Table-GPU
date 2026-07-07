@@ -15,7 +15,6 @@ namespace WPZ0325.EasyTableGPU
         [Header("Render Setup")]
         [SerializeField] MonoBehaviour _rendererComponent;
         [SerializeField] Material _material;
-        [SerializeField] Camera _renderCamera;
         [SerializeField] RenderLayer _renderLayer = RenderLayer.Normal;
         [SerializeField] float _viewportHeight = 400f;
         [SerializeField] float _viewportWidth  = 600f;
@@ -146,6 +145,7 @@ namespace WPZ0325.EasyTableGPU
             _builder = new TableMeshBuilder();
             _builder.SetFont(_fontHelper);
             _builder.SetScale(_worldUnitScale);
+            _tableRenderer.SetWorldUnitScale(_worldUnitScale);
             _tableRenderer.SetMaterialProperties(_material, _fontHelper.FontTexture);
             _lastRenderLayer = _renderLayer;
             _tableRenderer.SetRenderLayer(_renderLayer);
@@ -562,7 +562,7 @@ namespace WPZ0325.EasyTableGPU
         public bool IsMouseOverTable(Vector2 screen)
         {
             if (_tableRenderer == null || _styleConfig == null) return false;
-            Vector2 local = _tableRenderer.ScreenToTablePoint(screen, _renderCamera);
+            Vector2 local = _tableRenderer.ScreenToTablePoint(screen);
             return local.x >= 0f && local.x <= _viewportWidth
                 && local.y >= -_viewportHeight && local.y <= 0f;
         }
@@ -573,7 +573,7 @@ namespace WPZ0325.EasyTableGPU
             row = -1; col = -1;
             if (_styleConfig == null || _tableData.Count == 0 || _effectiveColWidths == null) return false;
 
-            Vector2 local = _tableRenderer.ScreenToTablePoint(screen, _renderCamera);
+            Vector2 local = _tableRenderer.ScreenToTablePoint(screen);
             if (local.x < 0f && local.y < 0f) return false;
 
             int r = RowFromLocalY(local.y);
@@ -596,7 +596,7 @@ namespace WPZ0325.EasyTableGPU
             TableStyleConfig s = _styleConfig;
             if (s == null || !s.IsShowToggleColumn || _toggleStates.Count == 0) return false;
 
-            Vector2 local = _tableRenderer.ScreenToTablePoint(screen, _renderCamera);
+            Vector2 local = _tableRenderer.ScreenToTablePoint(screen);
             if (local.x < 0f && local.y < 0f) return false;
 
             float tw = s.ToggleColumnWidth;
@@ -614,7 +614,7 @@ namespace WPZ0325.EasyTableGPU
             TableStyleConfig s = _styleConfig;
             if (s == null || !s.IsShowButtonColumn || _buttonTexts.Count == 0) return false;
 
-            Vector2 local = _tableRenderer.ScreenToTablePoint(screen, _renderCamera);
+            Vector2 local = _tableRenderer.ScreenToTablePoint(screen);
             if (local.x < 0f && local.y < 0f) return false;
 
             float togW = s.IsShowToggleColumn ? s.ToggleColumnWidth : 0f;
